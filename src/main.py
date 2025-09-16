@@ -1,20 +1,39 @@
+ï»¿# -*- coding: utf-8 -*-
 import argparse
-from sources import FEEDS
-from fetch import fetch_entries
+from src.sources import FEEDS
+from src.fetch import fetch_entries
+from src.normalize import normalize, dedupe, filter_since
+from src.save import save_csv, save_json, save_markdown
 
 def parse_args():
-    p = argparse.ArgumentParser(description="Automação de notícias de IA (RSS).")
-    p.add_argument("--since", type=int, default=7, help="Filtrar últimos N dias (default: 7)")
+    p = argparse.ArgumentParser(description="Automacao de noticias de IA (RSS).")
+    p.add_argument("--since", type=int, default=7, help="Filtrar ultimos N dias (default: 7)")
     p.add_argument("--limit", type=int, default=50, help="Limite de itens (default: 50)")
-    p.add_argument("--format", choices=["print","csv","json","markdown"], default="print", help="Formato de saída")
-    p.add_argument("--out", type=str, default="", help="Arquivo de saída (csv/json/md)")
+    p.add_argument("--format", choices=["print","csv","json","markdown"], default="print", help="Formato de saida")
+    p.add_argument("--out", type=str, default="", help="Arquivo de saida (csv/json/md)")
     return p.parse_args()
 
 def main():
     args = parse_args()
-    raw = fetch_entries(FEEDS)
-    print(f"[FETCH] total itens: {len(raw)}")
-    # próximos passos: normalizar, filtrar, exportar...
+    items = fetch_entries(FEEDS)
+    items = normalize(items)
+    items = dedupe(items)
+    items = filter_since(items, args.since)
+    items = sorted(items, key=lambda x: (x.get("published_dt") or 0), reverse=True)
+    if args.limit: items = items[:args.limit]
 
+    if args.format == "print":
+        print(f"[RESULT] itens: {len(items)}")
+        for i, it in enumerate(items, 1):
+            print(f"{i:02d}. {it.get('title','')}\n    {it.get('link','')}\n")
+    elif args.format == "csv":
+        if not args.out: raise SystemExit("--out Ã© obrigatÃ³rio para CSV")
+        save_csv(items, args.out); print(f"CSV salvo em: {args.out}")
+    elif args.format == "json":
+        if not args.out: raise SystemExit("--out Ã© obrigatÃ³rio para JSON")
+        save_json(items, args.out); print(f"JSON salvo em: {args.out}")
+    elif args.format == "markdown":
+        if not args.out: raise SystemExit("--out Ã© obrigatÃ³rio para Markdown")
+        save_markdown(items, args.out); print(f"Markdown salvo em: {args.out}")
 if __name__ == "__main__":
     main()
