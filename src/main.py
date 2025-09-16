@@ -3,7 +3,7 @@ import argparse
 from src.sources import FEEDS
 from src.fetch import fetch_entries
 from src.normalize import normalize, dedupe, filter_since
-from src.save import save_csv, save_json
+from src.save import save_csv, save_json, save_markdown
 
 def parse_args():
     p = argparse.ArgumentParser(description="Automacao de noticias de IA (RSS).")
@@ -32,7 +32,8 @@ def main():
     elif args.format == "json":
         if not args.out: raise SystemExit("--out é obrigatório para JSON")
         save_json(items, args.out); print(f"JSON salvo em: {args.out}")
-    else:
-        print("Formato ainda não implementado.")
+    elif args.format == "markdown":
+        if not args.out: raise SystemExit("--out é obrigatório para Markdown")
+        save_markdown(items, args.out); print(f"Markdown salvo em: {args.out}")
 if __name__ == "__main__":
     main()
