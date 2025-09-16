@@ -1,20 +1,20 @@
 import argparse
+from sources import FEEDS
+from fetch import fetch_entries
 
 def parse_args():
-    p = argparse.ArgumentParser(description="AutomaÃ§Ã£o de notÃ­cias de IA (RSS).")
-    p.add_argument("--since", type=int, default=7, help="Filtrar Ãºltimos N dias (default: 7)")
+    p = argparse.ArgumentParser(description="Automação de notícias de IA (RSS).")
+    p.add_argument("--since", type=int, default=7, help="Filtrar últimos N dias (default: 7)")
     p.add_argument("--limit", type=int, default=50, help="Limite de itens (default: 50)")
-    p.add_argument("--format", choices=["print","csv","json","markdown"], default="print", help="Formato de saÃ­da")
-    p.add_argument("--out", type=str, default="", help="Arquivo de saÃ­da (csv/json/md)")
+    p.add_argument("--format", choices=["print","csv","json","markdown"], default="print", help="Formato de saída")
+    p.add_argument("--out", type=str, default="", help="Arquivo de saída (csv/json/md)")
     return p.parse_args()
 
 def main():
     args = parse_args()
-    print("[CLI] parametros:")
-    print(f"  since={args.since}")
-    print(f"  limit={args.limit}")
-    print(f"  format={args.format}")
-    print(f"  out={args.out}")
+    raw = fetch_entries(FEEDS)
+    print(f"[FETCH] total itens: {len(raw)}")
+    # próximos passos: normalizar, filtrar, exportar...
 
 if __name__ == "__main__":
     main()
